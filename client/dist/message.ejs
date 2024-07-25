@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Linking Tailwind CSS -->
+  <link rel="stylesheet" href="tailwind.css" />
+  <title>Home - ChatBox</title>
+</head>
+<body>
+  <div class="container w-full h-full flex bg-slate-400">
+    <!-- Members List -->
+    <div id="members" class="w-1/4 h-dvh bg-slate-600 text-white">
+      Members
+      <div id="memberList" class="px-2 py-4"></div>
+    </div>
+    
+    <!-- Main Message Box -->
+    <div id="messageBox" class="flex flex-col justify-end w-full">
+      <div id="userInfo" class="w-full bg-slate-500 h-14 flex justify-between items-center px-4">
+        <span>Welcome, <%= username %>!</span>
+        <span>Room Code: <%= room %></span>
+        <button id="copyCode" class="bg-blue-600 text-white py-1 px-4 rounded">Copy Code</button>
+      </div>
+      <div id="messages" class="flex-grow px-10 py-4 overflow-y-auto"></div>
+      <div id="sendMessage" class="flex py-2 mx-2 my-3 px-2 bg-slate-500 rounded">
+        <input
+          type="text"
+          name="inputMessage"
+          id="inputMessage"
+          class="flex-grow rounded px-2"
+          placeholder="Start Messaging 😊😊"
+        />
+        <button type="button" id="submitbtn" class="bg-green-600 text-white ml-2 py-2 px-6 rounded">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <script src="https://momentjs.com/downloads/moment.js"></script>
+  <script>
+    var username = '<%= username %>';
+    var roomCode = '<%= room %>';
+    console.log(roomCode);
+
+    // Copy room code to clipboard
+    document.getElementById('copyCode').addEventListener('click', () => {
+      navigator.clipboard.writeText(roomCode).then(() => {
+        alert('Room code copied to clipboard!');
+      }, (err) => {
+        console.error('Failed to copy: ', err);
+      });
+    });
+
+    // Establish socket connection
+    const socket = io.connect("http://localhost:3000/");
+
+    // Emit a new connection event with user information
+    socket.emit("newConnection", { name: username, date: "Hello to everyone", code: roomCode });
+
+    // Join the room
+    socket.emit('joinRoom', { name: username, code: roomCode });
+
+    // Handle connection event
+    socket.on("connect", () => {
+      appendServerMessage("Connected to the server");
+    });
+
+    // Handle greeting event from the server
+    socket.on("greeting", (data) => {
+      appendServerMessage(data);
+    });
+
+    // Handle members data event from the server
+    socket.on("membersdata", (data) => {
+      appendMembersData(data);
+    });
+
+    // Handle new message event from the server
+    socket.on("newMessage", (message) => {
+      appendMessage(message);
+    });
+
+    // Handle disconnect event
+    socket.on("disconnect", () => {
+      appendServerMessage("Disconnected from the server");
+    });
+
+    // Error handling
+    socket.on("connect_error", (err) => {
+      console.error(`Connection error: ${err.message}`);
+      appendServerMessage("Connection error");
+    });
+
+    socket.on("error", (err) => {
+      console.error(`Socket error: ${err.message}`);
+      appendServerMessage("Socket error");
+    });
+
+    // Handle sending messages
+    document.getElementById('submitbtn').addEventListener('click', sendMessage);
+
+    function sendMessage() {
+      let textvalue = document.getElementById("inputMessage").value;
+      const date = moment().format('h:mm a');
+      if (textvalue) {
+        socket.emit('message', { name: username, message: textvalue, date: new Date().getTime(), code: roomCode });
+        document.getElementById("inputMessage").value = '';
+      }
+    }
+
+    // Functions for appending messages and members
+    function appendMessage(message) {
+      let messages = document.getElementById("messages");
+      const isOwnMessage = message.name === username;
+      const messageAlignClass = isOwnMessage ? 'justify-end' : 'justify-start';
+      const messageBgClass = isOwnMessage ? 'bg-green-200' : 'bg-white';
+      messages.innerHTML += `<div class="flex ${messageAlignClass} w-full items-center">
+              <div class="${messageBgClass} rounded-md min-w-60 max-w-96 w-auto px-4 pt-1 my-2">
+                <h1 id="username" class="text-xs font-semibold text-left">${message.name}</h1>
+                <p class="text-sm">${message.message}</p>
+                <p class="text-xs text-right">${moment(message.date).format('LT')}</p>
+              </div>
+            </div>`;
+    }
+
+    function appendServerMessage(message) {
+      let messages = document.getElementById("messages");
+      messages.innerHTML += `<div class=" flex justify-center w-full items-center">
+              <p class="bg-white rounded-md min-w-60 max-w-96 w-auto px-4 my-2 text-sm text-center">${message}</p>
+            </div>`;
+    }
+
+    function appendMembersData(data) {
+      let members = document.getElementById("memberList");
+      members.innerHTML = '';
+      data.data.forEach((element) => {
+        members.innerHTML += `<div class="text-white px-10 py-2">
+              ${element}
+              </div>`;
+      });
+    }
+  </script>
+</body>
+</html>
