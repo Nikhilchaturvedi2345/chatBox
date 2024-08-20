@@ -6,6 +6,8 @@ import session from "express-session";
 import { Server } from "socket.io";
 import SocketController from "./controllers/socket.io.js";
 import UserController from "./controllers/controller.js";
+import { connect } from "./config/mongodb.js";
+
 
 dotenv.config();
 
@@ -72,4 +74,5 @@ app.post("/createRoom", UserController.createRoom);
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running at PORT ${PORT}`);
+  connect();
 });

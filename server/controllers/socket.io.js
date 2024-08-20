@@ -1,5 +1,8 @@
 import buildMessage from "../utils/msgformat.js";
-import UserModel from "../model/userModel.js";
+import userRepository from "../repository/userRepository.js";
+import ChatRepository from "../repository/chatRepository.js";
+const UserRepository = new userRepository();
+const chatRepository = new ChatRepository()
 
 export default class Socket {
   // Handle new user joining the chat
@@ -27,11 +30,12 @@ export default class Socket {
   }
 
   // Handle new message sent by user
-  static newMessage(userinfo, io) {
+  static async newMessage(userinfo, io) {
     try {
       let { name, message, date, code } = userinfo;
    
       // Emit new message only to users in the same room
+      await chatRepository.newChat(name, code , message, date);
       io.to(code).emit("newMessage", {
         name,
         message,
@@ -44,11 +48,12 @@ export default class Socket {
   }
 
   // Emit members data for a specific room
-  static membersData(socket, session, io) {
+  static async membersData(socket, session, io) {
     try {
       if (session && session.passCode) {
         const code = session.passCode;
-        const members = UserModel.getAllPersons(code);
+        const members = await UserRepository.getAllPersons(code);
+        console.log(members)
         socket.to(code).emit("membersdata", {
           data: members
         });
@@ -67,8 +72,8 @@ export default class Socket {
         const name = session.username;
         const passCode = session.passCode;
 
-        if (UserModel.isAlreadyUser(name, passCode)) {
-          UserModel.removeUser(name, passCode);
+        if (UserRepository.isAlreadyUser(name, passCode)) {
+          UserRepository.removeUser(name, passCode);
           console.log(`${name} removed from chat.`);
         }
       } else {
