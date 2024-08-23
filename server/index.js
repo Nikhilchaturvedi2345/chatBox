@@ -26,8 +26,9 @@ const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "defaultSecret",
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false },
+  cookie: { secure: process.env.NODE_ENV === 'production' },
 });
+
 
 app.use(sessionMiddleware);
 app.set("view engine", "ejs");

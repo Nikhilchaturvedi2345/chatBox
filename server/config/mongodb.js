@@ -1,7 +1,8 @@
 import { MongoClient } from "mongodb";
 
-const url = "mongodb://127.0.0.1:27017/";
-const dbName = "chatBox";
+const url = process.env.MONGO_URL || "mongodb://127.0.0.1:27017/";
+const dbName = process.env.DB_NAME || "chatBox";
+
 let client;
 
 

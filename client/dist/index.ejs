@@ -121,8 +121,10 @@
       </div>
     </div>
     <script>
-      let input = document.getElementById('ifcode');
-      input.value = localStorage.getItem('chatboxcode');
-    </script>
+      document.addEventListener('DOMContentLoaded', function () {
+        let input = document.getElementById('ifcode');
+        input.value = localStorage.getItem('chatboxcode');
+      });
+    </script>    
   </body>
 </html>
