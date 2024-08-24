@@ -8,23 +8,35 @@
     <title>Home - ChatBox</title>
   </head>
   <body class="select-none">
-    <div class="container w-full h-full flex bg-slate-400">
+    <div class="container w-full h-full flex bg-slate-400 overflow-hidden">
       <!-- Members List -->
       <div
-        id="members"
-        class="w-1/4 h-dvh bg-slate-600 text-white font-semibold ps-4 pt-4"
+        id="membersBox"
+        class="md:w-1/4 md:relative md:ml-0 z-10 h-dvh bg-slate-600 text-white font-semibold ps-20 md:ps-4 pt-4 -ml-96 w-auto absolute md:block transform transition-all duration-200"
       >
         Members
         <div id="memberList" class="px-2 py-4 font-normal"></div>
       </div>
 
       <!-- Main Message Box -->
-      <div id="messageBox" class="flex flex-col justify-end w-full">
+      <div id="messageBox" class="flex flex-col justify-end w-full h-dvh lg:h-auto">
         <div
           id="userInfo"
           class="w-full bg-slate-500 h-14 flex justify-between items-center px-4 text-white"
         >
-          <!-- <span>Welcome, <%= username %>!</span> -->
+          <!-- Icon 2 -->
+    <div>
+      <button class="relative group z-50" id="hamberger">
+        <div class="relative flex overflow-hidden items-center justify-center rounded-full w-[50px] h-[50px] transform transition-all  duration-200 shadow-md">
+          <div class="flex flex-col justify-between w-[20px] h-[20px] transform transition-all duration-300 origin-center overflow-hidden">
+            <div class="bg-white h-[2px] w-7 transform transition-all duration-300 origin-left group-focus:rotate-[42deg]"></div>
+            <div class="bg-white h-[2px] w-1/2 rounded transform transition-all duration-300 group-focus:-translate-x-10"></div>
+            <div class="bg-white h-[2px] w-7 transform transition-all duration-300 origin-left group-focus:-rotate-[42deg]"></div>
+          </div>
+        </div>
+      </button>
+    </div>
+
           <span>Room Code: <%= room %></span>
           <button
             id="copyCode"
@@ -193,6 +205,19 @@
               </div>`;
         });
       }
+
+      const hamberger = document.getElementById('hamberger');
+      const member = document.getElementById('membersBox');
+      hamberger.addEventListener('click',()=>{
+        if(member.className.includes('-ml-96')){
+          member.classList.remove('-ml-96');
+        }else{
+          member.classList.add('-ml-96');
+          hamberger.blur();
+        }
+      })
+        
+      
     </script>
   </body>
 </html>
