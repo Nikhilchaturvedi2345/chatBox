@@ -12,7 +12,9 @@ class UserRepository {
       }
 
       // Create a new room
-      await db.collection("rooms").insertOne({ code: Number(code), persons: [] });
+      await db
+        .collection("rooms")
+        .insertOne({ code: Number(code), persons: [] });
       console.log(`Room ${code} created successfully.`);
       return true;
     } catch (error) {
@@ -122,18 +124,34 @@ class UserRepository {
     }
   }
 
-async deleteRoom(code) {
-  try {
-    const db = getDatabase();
-    await db.collection("rooms").deleteOne({ code: Number(code) });
-    console.log(`Room ${code} deleted successfully.`);
-    return true;
-  } catch (error) {
-    console.error(`Error deleting room ${code}:`, error);
-    return false;
+  async deleteRoom(code) {
+    try {
+      const db = getDatabase();
+      await db.collection("rooms").deleteOne({ code: Number(code) });
+      console.log(`Room ${code} deleted successfully.`);
+      return true;
+    } catch (error) {
+      console.error(`Error deleting room ${code}:`, error);
+      return false;
+    }
   }
-}
 
+  async onlyAdmin(code) {
+    try {
+      const db = getDatabase();
+      const room = await db
+        .collection("rooms")
+        .findOne({ code: Number(code), persons: { $size: 1 } });
+      if(room){
+        return true;
+      }
+      else{
+        return false;
+      }
+    } catch (error) {
+      console.error("Error on finding Admin");
+    }
+  }
 }
 
 export default UserRepository;

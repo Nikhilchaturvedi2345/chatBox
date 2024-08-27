@@ -8,7 +8,6 @@ import SocketController from "./controllers/socket.io.js";
 import UserController from "./controllers/controller.js";
 import { connect } from "./config/mongodb.js";
 
-
 dotenv.config();
 
 const currentDir = path.join(path.dirname(path.resolve()), "client", "dist");
@@ -26,9 +25,8 @@ const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "defaultSecret",
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production' },
+  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 },
 });
-
 
 app.use(sessionMiddleware);
 app.set("view engine", "ejs");
@@ -43,34 +41,49 @@ io.use((socket, next) => {
 io.on("connection", (socket) => {
   console.log("Connection made");
 
-  socket.on("newConnection", (user) => {
+  socket.on("newConnection", async (user) => {
     const session = socket.request.session;
-    SocketController.newUserJoins(user, socket);
-    SocketController.membersData(io, session);
+    await SocketController.newUserJoins(user, socket,io);
+    // await SocketController.membersData(io, session);
   });
 
   socket.on("message", (user) => {
-    SocketController.newMessage(user, io);
+    const session = socket.request.session;
+    SocketController.newMessage(user, io, session);
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     const session = socket.request.session;
     if (session && session.passCode) {
       const code = session.passCode;
       socket.leave(code); // Ensure the socket leaves the room on disconnect
-      SocketController.removeUser(session);
-      SocketController.membersData(socket, session); // Update members list
+      await SocketController.removeUser(session);
+      await SocketController.membersData(socket, session); // Update members list
       console.log("Client disconnected");
     }
   });
-  
 });
 
 app.use(express.urlencoded({ extended: false }));
 
+// Home page route
 app.get("/", UserController.home);
-app.post("/chat", UserController.gotoChatbox);
-app.post("/createRoom", UserController.createRoom);
+
+// Route to create a new room
+app.post("/createRoom", async (req, res) => {
+  if (req.session.passCode) {
+    await UserController.chackReload(req, res);
+  }
+  await UserController.createRoom(req, res);
+});
+
+// Route to join a room
+app.post("/chat", async (req, res) => {
+  if (req.session.passCode) {
+    await UserController.chackReload(req, res);
+  }
+  await UserController.gotoChatbox(req, res);
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

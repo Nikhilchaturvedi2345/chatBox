@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev" : "npx tailwindcss -i ./src/input.css -o ./dist/tailwind.css --watch.css"
+    "dev": "npx tailwindcss -i ./src/input.css -o ./dist/tailwind.css --watch.css"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "tailwindcss": "^3.4.4"
   },
-    "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@joeattardi/emoji-button": "^4.6.4"
+  }
 }
