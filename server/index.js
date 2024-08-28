@@ -25,7 +25,7 @@ const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "defaultSecret",
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV == "production", maxAge: 1000 * 60 * 60 * 24 },
+  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 },
 });
 
 app.use(sessionMiddleware);
@@ -57,7 +57,10 @@ io.on("connection", (socket) => {
     if (session && session.passCode) {
       const code = session.passCode;
       socket.leave(code); // Ensure the socket leaves the room on disconnect
-      await SocketController.removeUser(session,socket);
+      await SocketController.removeUser(session);
+      socket
+          .to(session.passCode)
+          .emit("greeting", `${session.username} left the chat`);
       await SocketController.membersData(socket, session); // Update members list
       console.log("Client disconnected");
     }
