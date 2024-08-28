@@ -25,7 +25,7 @@ const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || "defaultSecret",
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 },
+  cookie: { secure: process.env.NODE_ENV == "production", maxAge: 1000 * 60 * 60 * 24 },
 });
 
 app.use(sessionMiddleware);
@@ -57,7 +57,7 @@ io.on("connection", (socket) => {
     if (session && session.passCode) {
       const code = session.passCode;
       socket.leave(code); // Ensure the socket leaves the room on disconnect
-      await SocketController.removeUser(session);
+      await SocketController.removeUser(session,socket);
       await SocketController.membersData(socket, session); // Update members list
       console.log("Client disconnected");
     }
@@ -72,17 +72,19 @@ app.get("/", UserController.home);
 // Route to create a new room
 app.post("/createRoom", async (req, res) => {
   if (req.session.passCode) {
-    await UserController.chackReload(req, res);
+    res.end(await UserController.chackReloadroom(req, res))
+  }else{
+    await UserController.createRoom(req, res);
   }
-  await UserController.createRoom(req, res);
 });
 
 // Route to join a room
 app.post("/chat", async (req, res) => {
   if (req.session.passCode) {
-    await UserController.chackReload(req, res);
+    await UserController.chackReloadchat(req, res);
+  }else{
+    await UserController.gotoChatbox(req, res);
   }
-  await UserController.gotoChatbox(req, res);
 });
 
 const PORT = process.env.PORT || 3000;

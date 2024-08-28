@@ -161,7 +161,7 @@ export default class UserController {
     }
   }
 
-  static async chackReload(req, res) {
+  static async chackReloadroom(req, res) {
     // Check if a room code already exists in the session
     const name = req.session.username;
     const code = req.session.passCode;
@@ -170,6 +170,21 @@ export default class UserController {
     // Room already exists, redirect to the chatbox
     if (result && !onlyAdmin) {
       return res.status(204).send();
+    }else{
+      await this.createRoom(req, res);
+    }
+  }
+  static async chackReloadchat(req, res) {
+    // Check if a room code already exists in the session
+    const name = req.session.username;
+    const code = req.session.passCode;
+    const result = await UserRepository.isAlreadyUser(name, code);
+    const onlyAdmin = await UserRepository.onlyAdmin(code);
+    // Room already exists, redirect to the chatbox
+    if (result && !onlyAdmin) {
+      return res.status(204).send();
+    }else{
+      await this.gotoChatbox(req, res);
     }
   }
 }

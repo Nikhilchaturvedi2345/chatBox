@@ -10,12 +10,13 @@
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <% if(err){ %>
       <div
+        id="error_box"
         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
         role="alert"
       >
         <strong class="font-bold">Error!</strong>
         <span class="block sm:inline"><%= err %></span>
-        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="closePrompt(this)">
           <svg
             class="fill-current h-6 w-6 text-red-500"
             role="button"
@@ -125,6 +126,9 @@
         let input = document.getElementById('ifcode');
         input.value = localStorage.getItem('chatboxcode');
       });
+      function closePrompt(ele){
+        ele.parentNode.style.display = "none";
+      }
     </script>    
   </body>
 </html>

@@ -13,42 +13,52 @@
     }
   </style>
   <body class="select-none">
-    <div class="container w-full h-full flex bg-secondary overflow-hidden">
+    <div class="container flex h-full w-full overflow-hidden bg-secondary">
       <!-- Members List -->
       <div
         id="membersBox"
-        class="md:w-1/4 md:relative md:ml-0 z-10 h-dvh bg-primary text-white font-semibold px-2 pt-4 -ml-96 w-auto absolute md:block transform transition-all duration-200"
+        class="absolute z-10 -ml-96 flex h-dvh w-auto transform flex-col justify-between bg-primary px-2 py-4 font-semibold text-white transition-all duration-200 md:relative md:ml-0 md:flex md:w-1/4"
       >
-      <span class="ps-20 pe-4 md:ps-4">Members</span>
-        <div id="memberList" class="ps-2 py-4 font-normal"></div>
+        <div>
+          <span class="pe-4 ps-20 md:ps-4">Members</span>
+          <div id="memberList" class="py-4 ps-2 font-normal"></div>
+        </div>
+        <div
+          class="w-full text-center bg-red-700"
+          onclick="window.location.replace('/')"
+        >
+          <button class="rounded-sm px-4 py-2 text-center text-white">
+            Leave Meeting
+          </button>
+        </div>
       </div>
 
       <!-- Main Message Box -->
       <div
         id="messageBox"
-        class="flex flex-col justify-end w-full h-dvh lg:h-auto"
+        class="flex h-dvh w-full flex-col justify-end lg:h-auto"
       >
         <div
           id="userInfo"
-          class="w-full bg-tertiary h-14 flex justify-between items-center px-4 text-white"
+          class="flex h-14 w-full items-center justify-between bg-tertiary px-4 text-white"
         >
           <!-- Hamberger icon -->
           <div class="md:hidden">
-            <button class="relative group z-50" id="hamberger">
+            <button class="group relative z-50" id="hamberger">
               <div
-                class="relative flex overflow-hidden items-center justify-center rounded-full w-[50px] h-[50px] transform transition-all duration-200 shadow-md"
+                class="relative flex h-[50px] w-[50px] transform items-center justify-center overflow-hidden rounded-full shadow-md transition-all duration-200"
               >
                 <div
-                  class="flex flex-col justify-between w-[20px] h-[20px] transform transition-all duration-300 origin-center overflow-hidden"
+                  class="flex h-[20px] w-[20px] origin-center transform flex-col justify-between overflow-hidden transition-all duration-300"
                 >
                   <div
-                    class="bg-white h-[2px] w-7 transform transition-all duration-300 origin-left group-focus:rotate-[42deg]"
+                    class="h-[2px] w-7 origin-left transform bg-white transition-all duration-300 group-focus:rotate-[42deg]"
                   ></div>
                   <div
-                    class="bg-white h-[2px] w-1/2 rounded transform transition-all duration-300 group-focus:-translate-x-10"
+                    class="h-[2px] w-1/2 transform rounded bg-white transition-all duration-300 group-focus:-translate-x-10"
                   ></div>
                   <div
-                    class="bg-white h-[2px] w-7 transform transition-all duration-300 origin-left group-focus:-rotate-[42deg]"
+                    class="h-[2px] w-7 origin-left transform bg-white transition-all duration-300 group-focus:-rotate-[42deg]"
                   ></div>
                 </div>
               </div>
@@ -56,21 +66,21 @@
           </div>
 
           <span>Room Code: <%= room %></span>
-          <button id="copyCode" class="bg-button text-white py-1 px-4 rounded">
+          <button id="copyCode" class="rounded bg-button px-4 py-1 text-white">
             Copy Code
           </button>
         </div>
         <div
           id="messages"
-          class="flex-grow px-10 py-4 overflow-y-auto h-0"
+          class="h-0 flex-grow overflow-y-auto px-10 py-4"
         ></div>
         <div
           id="sendMessage"
-          class="flex py-2 mx-2 my-3 px-2 bg-tertiary rounded"
+          class="mx-2 my-3 flex rounded bg-tertiary px-2 py-2"
         >
           <div
             id="emoji_picker"
-            class="me-3 flex h-10 w-10 justify-center rounded-md text-4xl leading-7 text-gray-400 ring-2 ring-gray-500"
+            class="me-3 flex h-10 w-10 justify-center items-center rounded-md text-lg leading-7 text-gray-400 shadow-black ring-2 ring-gray-500 drop-shadow-md md:text-4xl"
           >
             ☺️
           </div>
@@ -78,198 +88,31 @@
             type="text"
             name="inputMessage"
             id="inputMessage"
-            class="flex-grow rounded px-2 bg-slate-200 focus:border-0 focus:outline-none"
+            class="min-w-16 flex-grow rounded bg-slate-200 px-2 focus:border-0 focus:outline-none"
             placeholder="Start Messaging 😊😊"
           />
           <button
             type="button"
             id="submitbtn"
-            class="bg-green-600 text-white ml-2 py-2 px-6 rounded"
+            class="ml-2 rounded bg-green-700 px-6 py-2 text-white"
           >
             Send
           </button>
         </div>
       </div>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://momentjs.com/downloads/moment.js"></script>
-    <script type="module">
-      import { EmojiButton } from "https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js";
-
-      const picker = new EmojiButton({
-        autoHide: false, // Prevent the picker from closing automatically
-        position: "top-start",
-      });
-      const trigger = document.getElementById("emoji_picker");
-
-      picker.on("emoji", (selection) => {
-        let textvalue = document.getElementById("inputMessage");
-        textvalue.value = textvalue.value + selection.emoji;
-      });
-
-      trigger.addEventListener("click", () => picker.togglePicker(trigger));
-    </script>
+    <script type="module" src="./js/emojipicker.js"></script>
+    <script src="./js/util.js"></script>
     <script>
       var username = "<%= username || 'Guest' %>";
       var roomCode = "<%= room || 'Unknown Room' %>";
 
-      // Copy room code to clipboard
-      document.getElementById("copyCode").addEventListener("click", () => {
-        navigator.clipboard.writeText(roomCode).then(
-          () => {
-            alert("Room code copied to clipboard!");
-          },
-          (err) => {
-            console.error("Failed to copy: ", err);
-          }
-        );
-      });
-
       let members = document.getElementById("memberList");
       members.innerHTML = "<%= members %>";
-
-      // Establish socket connection
-      const socket = io.connect(window.location.origin);
-
-      // Emit a new connection event with user information
-      socket.emit("newConnection", {
-        name: username,
-        date: "Hello to everyone",
-        code: roomCode,
-      });
-
-      // Join the room
-      socket.emit("joinRoom", { name: username, code: roomCode });
-
-      // Handle connection event
-      socket.on("connect", () => {
-        appendServerMessage("Connected to the server");
-      });
-
-      // Handle greeting event from the server
-      socket.on("greeting", (data) => {
-        appendServerMessage(data);
-      });
-
-      // Handle members data event from the server
-      socket.on("membersdata", (data) => {
-        appendMembersData(data);
-      });
-
-      // Handle new message event from the server
-      socket.on("newMessage", (message) => {
-        appendMessage(message);
-      });
-
-      // Handle disconnect event
-      socket.on("disconnect", () => {
-        appendServerMessage("Disconnected from the server");
-      });
-
-      // Error handling
-      socket.on("connect_error", (err) => {
-        console.error(`Connection error: ${err.message}`);
-        appendServerMessage("Connection error");
-      });
-
-      socket.on("error", (err) => {
-        console.error(`Socket error: ${err.message}`);
-        appendServerMessage("Socket error");
-      });
-
-      // Handle sending messages by mouse event
-      document
-        .getElementById("submitbtn")
-        .addEventListener("click", sendMessage);
-
-      function sendMessage() {
-        let textvalue = document.getElementById("inputMessage").value;
-        const date = moment().format("h:mm a");
-        if (textvalue) {
-          socket.emit("message", {
-            name: username,
-            message: textvalue,
-            date: new Date().getTime(),
-            code: roomCode,
-          });
-          document.getElementById("inputMessage").value = "";
-        }
-      }
-
-      // Handle sending messages by keyboard Event
-      document.onkeydown = function (evt) {
-        var keyCode = evt
-          ? evt.which
-            ? evt.which
-            : evt.keyCode
-          : event.keyCode;
-        if (keyCode == 13) {
-          sendMessage();
-        }
-      };
-
-      // Functions for appending messages and members
-      function appendMessage(message) {
-        let messages = document.getElementById("messages");
-        const isOwnMessage = message.name === username;
-        const messageAlignClass = isOwnMessage
-          ? "justify-end"
-          : "justify-start";
-        const messageBgClass = isOwnMessage ? "bg-green-200" : "bg-white";
-
-        // Add the new message to the messages container
-        messages.innerHTML += `<div class="flex ${messageAlignClass} w-full items-center">
-        <div class="${messageBgClass} rounded-md min-w-60 max-w-96 w-auto px-4 pt-1 my-2">
-          <h1 id="username" class="text-xs font-semibold text-left">${
-            message.name
-          }</h1>
-          <p class="text-sm">${message.message}</p>
-          <p class="text-xs text-right">${moment(message.date).format("LT")}</p>
-        </div>
-      </div>`;
-
-        // Scroll to the bottom of the message container
-        messages.scrollTop = messages.scrollHeight;
-      }
-
-      function appendServerMessage(message) {
-        let messages = document.getElementById("messages");
-        messages.innerHTML += `<div class=" flex justify-center w-full items-center">
-              <p class="bg-white rounded-md min-w-60 max-w-96 w-auto px-4 my-2 text-sm text-center">${message}</p>
-            </div>`;
-
-        // Scroll to the bottom of the message container
-        messages.scrollTop = messages.scrollHeight;
-      }
-
-      function appendMembersData(data) {
-        let members = document.getElementById("memberList");
-        members.innerHTML = "";
-        data.data.forEach((element) => {
-          members.innerHTML += `<div class="flex items-center justify-start gap-3 px-2 py-2 text-white">
-          <div class="grid h-8 w-8 place-items-center rounded-full text-center ring-2 ring-orange-500">${element
-            .substring(0, 1)
-            .toUpperCase()}</div>
-          ${element}
-        </div>
-          
-          
-          <div class="text-white px-10 py-2">
-              
-              </div>`;
-        });
-      }
-
-      const hamberger = document.getElementById("hamberger");
-      const member = document.getElementById("membersBox");
-      hamberger.addEventListener("click", () => {
-        if (member.className.includes("-ml-96")) {
-          member.classList.remove("-ml-96");
-        } else {
-          member.classList.add("-ml-96");
-          hamberger.blur();
-        }
-      });
     </script>
+    <script src="./js/socket_io.js"></script>
   </body>
 </html>

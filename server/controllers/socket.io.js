@@ -65,7 +65,7 @@ export default class Socket {
   }
 
   // Function to remove user from chat on disconnect
-  static async removeUser(session) {
+  static async removeUser(session,socket) {
     try {
       if (session && session.passCode && session.username) {
         const name = session.username;
@@ -73,6 +73,9 @@ export default class Socket {
 
         if (await UserRepository.isAlreadyUser(name, passCode)) {
           await UserRepository.removeUser(name, passCode);
+          socket
+          .to(passCode)
+          .emit("greeting", buildMessage(`${name} left the chat`).message);
           console.log(`${name} removed from chat.`);
         }
       } else {
